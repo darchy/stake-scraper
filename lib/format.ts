@@ -19,22 +19,24 @@ export const formatCompact = (value: number) => compact.format(value);
 export const formatPercent = (value: number) => percent.format(value);
 export const formatRtp = (value: number) => percent2.format(value);
 
-/** Amount with a true minus sign when negative: "1,234" / "−1,234". */
-export function formatAmount(value: number): string {
+// Money: the sign goes before the dollar sign ("−$1,234"), with a true minus.
+
+/** "$1,234" / "−$1,234" */
+export function formatMoney(value: number): string {
   const rounded = Math.round(value);
-  return rounded < 0 ? `−${integer.format(-rounded)}` : integer.format(rounded);
+  return `${rounded < 0 ? "−" : ""}$${integer.format(Math.abs(rounded))}`;
 }
 
-/** Signed amount: "+1,234" / "−1,234" (true minus sign). */
-export function formatSigned(value: number): string {
+/** "+$1,234" / "−$1,234" / "$0" */
+export function formatSignedMoney(value: number): string {
   const rounded = Math.round(value);
-  if (rounded === 0) return "0";
-  return `${rounded > 0 ? "+" : "−"}${integer.format(Math.abs(rounded))}`;
+  if (rounded === 0) return "$0";
+  return `${rounded > 0 ? "+" : "−"}$${integer.format(Math.abs(rounded))}`;
 }
 
-export function formatSignedCompact(value: number): string {
-  if (value === 0) return "0";
-  return `${value > 0 ? "" : "−"}${compact.format(Math.abs(value))}`;
+/** Axis ticks: "$12.3K" / "−$12.3K" / "$0" */
+export function formatMoneyCompact(value: number): string {
+  return `${value < 0 ? "−" : ""}$${compact.format(Math.abs(value))}`;
 }
 
 // Dates are only formatted in the browser (after hydration), so the viewer's
