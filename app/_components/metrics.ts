@@ -1,12 +1,12 @@
 import { STUDIO_GGR_SHARE } from "@/lib/stats-types";
 import {
-  formatAmount,
   formatCompact,
   formatInteger,
+  formatMoney,
+  formatMoneyCompact,
   formatPercent,
   formatRtp,
-  formatSigned,
-  formatSignedCompact,
+  formatSignedMoney,
 } from "@/lib/format";
 
 export type MetricKey = "studioEarnings" | "betCount" | "wageredValue" | "profitValue" | "rtp";
@@ -34,8 +34,8 @@ export const METRICS: Metric[] = [
     key: "studioEarnings",
     title: "Studio earnings",
     note: `${STUDIO_GGR_SHARE * 100}% of GGR (stakes minus winnings paid). Negative when players won`,
-    format: formatAmount,
-    formatAxis: formatSignedCompact,
+    format: formatMoney,
+    formatAxis: formatMoneyCompact,
     delta: "absolute",
     reference: { value: 0, label: "Zero" },
     shape: "area",
@@ -54,8 +54,8 @@ export const METRICS: Metric[] = [
     key: "wageredValue",
     title: "Wagered",
     note: "Total amount staked",
-    format: formatInteger,
-    formatAxis: formatCompact,
+    format: formatMoney,
+    formatAxis: formatMoneyCompact,
     delta: "relative",
     shape: "area",
   },
@@ -63,8 +63,8 @@ export const METRICS: Metric[] = [
     key: "profitValue",
     title: "Player profit",
     note: "Winnings minus stakes. Below zero, the house is ahead",
-    format: formatSigned,
-    formatAxis: formatSignedCompact,
+    format: formatSignedMoney,
+    formatAxis: formatMoneyCompact,
     delta: "absolute",
     reference: { value: 0, label: "Break-even" },
     shape: "area",
@@ -97,8 +97,9 @@ export function describeDelta(
       const change = Math.abs(diff / previous);
       return { direction, text: formatPercent(change) };
     }
+    // Only money metrics use "absolute".
     case "absolute":
-      return { direction, text: formatInteger(Math.abs(diff)) };
+      return { direction, text: formatMoney(Math.abs(diff)) };
     case "points":
       return { direction, text: `${(Math.abs(diff) * 100).toFixed(2)} pp` };
   }
