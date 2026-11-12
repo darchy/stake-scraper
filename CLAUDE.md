@@ -76,6 +76,12 @@ Non-default behavior enabled in `next.config.ts`:
 - **`experimental.agentFeedback: true`** — `next dev` maintains the feedback block in `AGENTS.md`; commit that file rather than stripping the block.
 - **Tailwind via Turbopack loader** — Tailwind v4 is wired through a `turbopack.rules` entry using `@tailwindcss/turbopack`, not PostCSS (there is no `postcss.config`). Theme tokens are defined with `@theme inline` in `app/globals.css`.
 
+## Git workflow
+
+- **Create a new branch before making any change**, including docs-only changes. Never edit or commit directly on `main`.
+- Name branches `feature/<relevant-name>`, with a short kebab-case description of the change. Examples: `feature/stats-dashboard`, `feature/studio-earnings`.
+- Branch from an up-to-date `main` unless told otherwise.
+
 ## Conventions
 
 - Path alias `@/*` maps to the repo root (no `src/` dir).

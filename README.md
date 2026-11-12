@@ -30,3 +30,7 @@ Open http://localhost:3000. The machine running the app has to be able to reach 
 - **game_statistics**: snapshots in time of a game's `day` / `week` / `month` / `all` metrics (`betCount`, `wageredValue`, `profitValue`, `rtp`), stored as JSON
 
 See `CLAUDE.md` for field-level details and how to read the metrics.
+
+## Contributing
+
+Create a new branch before making any change, and name it `feature/<relevant-name>` (for example `feature/studio-earnings`). Don't commit directly to `main`.
