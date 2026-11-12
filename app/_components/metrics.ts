@@ -27,6 +27,11 @@ export type Metric = {
   shape: "area" | "line";
   /** Spans the full width of the grid, above the others. */
   featured?: boolean;
+  /**
+   * Show the sum of all points below the chart. Only meaningful for the day
+   * window: longer rolling windows overlap and would be counted several times.
+   */
+  showTotal?: boolean;
 };
 
 export const METRICS: Metric[] = [
@@ -40,6 +45,7 @@ export const METRICS: Metric[] = [
     reference: { value: 0, label: "Zero" },
     shape: "area",
     featured: true,
+    showTotal: true,
   },
   {
     key: "betCount",

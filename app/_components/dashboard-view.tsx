@@ -179,6 +179,14 @@ export function DashboardView({ games, series, gameId, window }: Props) {
                       />
                     )}
                   </div>
+                  {metric.showTotal && window === "day" && (
+                    <p className="mt-3 text-sm text-muted">
+                      Total across {series.length} {series.length === 1 ? "snapshot" : "snapshots"}:{" "}
+                      <span className="font-medium text-ink-2 tabular-nums">
+                        {metric.format(sumOf(series, metric.key))}
+                      </span>
+                    </p>
+                  )}
                 </figure>
               );
             })}
@@ -245,6 +253,11 @@ function cellBorders(metric: Metric, index: number): string {
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+/** Sum of one metric over every point in the series, skipping missing values. */
+function sumOf(series: StatsPoint[], key: Metric["key"]): number {
+  return series.reduce((sum, point) => sum + (point[key] ?? 0), 0);
 }
 
 function groupByStudio(games: GameOption[]): [string, GameOption[]][] {
