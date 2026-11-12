@@ -2,32 +2,14 @@ import { Suspense } from "react";
 import { getGames, getStatsSeries } from "@/lib/stats";
 import { parseGameId, parseWindow } from "@/lib/stats-types";
 import { DashboardView } from "./_components/dashboard-view";
-import { ThemeSwitch } from "./_components/theme-switch";
 
 export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <div className="halo min-h-screen">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-8">
-        <header className="flex items-center justify-between gap-4 py-5">
-          <div className="flex items-center gap-2.5 whitespace-nowrap">
-            <svg viewBox="0 0 24 24" className="size-6 text-data" aria-hidden fill="currentColor">
-              <rect x="3" y="12" width="4" height="9" rx="1.5" />
-              <rect x="10" y="7" width="4" height="14" rx="1.5" />
-              <rect x="17" y="3" width="4" height="18" rx="1.5" />
-            </svg>
-            <span className="text-lg font-semibold tracking-tight">Game stats</span>
-            <span className="hidden text-muted sm:inline">from stake.com</span>
-          </div>
-          <ThemeSwitch />
-        </header>
-
-        <main>
-          <Suspense fallback={<DashboardSkeleton />}>
-            <Dashboard searchParams={searchParams} />
-          </Suspense>
-        </main>
-      </div>
-    </div>
+    <main>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <Dashboard searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
 

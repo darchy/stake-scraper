@@ -20,6 +20,7 @@
   --data-wash: rgb(42 120 214 / 0.22);
   --ring: #2a78d6;
   --halo: rgb(42 120 214 / 0.16);
+  --danger: #c42b2b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +39,7 @@
     --data-wash: rgb(57 135 229 / 0.3);
     --ring: #6da7ec;
     --halo: rgb(57 135 229 / 0.22);
+    --danger: #f27272;
   }
 }
 
@@ -56,6 +58,7 @@
   --data-wash: rgb(57 135 229 / 0.3);
   --ring: #6da7ec;
   --halo: rgb(57 135 229 / 0.22);
+  --danger: #f27272;
 }
 
 @theme inline {
@@ -66,8 +69,10 @@
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
   --color-hairline: var(--hairline);
+  --color-axis: var(--axis);
   --color-data: var(--data);
   --color-ring: var(--ring);
+  --color-danger: var(--danger);
   --font-sans: var(--font-bricolage), system-ui, sans-serif;
 }
 
