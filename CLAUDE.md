@@ -4,9 +4,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
+## Project purpose
+
+A dashboard that reads game statistics scraped from stake.com out of a PostgreSQL database and shows them as charts. The scraping itself happens outside this app, which only reads from the database.
+
+The database runs on the owner's Linux desktop server and is reachable only over their local network. Connection details live in `.env.local`, which is gitignored by the `.env*` rule. Never hard-code them or print them.
+
 ## Project state
 
-`stake-scraper` is currently an unmodified `create-next-app` scaffold (App Router, TypeScript, Tailwind v4). No scraping logic, data layer, or tests exist yet — `app/page.tsx` and `app/layout.tsx` are the template defaults.
+Still the unmodified `create-next-app` scaffold (App Router, TypeScript, Tailwind v4): `app/page.tsx` and `app/layout.tsx` are template defaults. There's no database client, data layer, charting library or test setup yet.
+
+## Database schema
+
+```
+studios          id PK, name, created_at, followers      -- followers on stake.com
+games            id PK, studio_id → studios.id, name, created_at,
+                 game_id   -- stake.com's own id; optional, likely unused
+                 game_slug -- the slug used in stake.com GraphQL queries
+                 saves     -- number of saves on stake.com
+game_statistics  id PK, game_id → games.id (NOT games.game_id), created_at,
+                 statistics_json
+```
+
+`statistics_json` holds a snapshot of four rolling windows, `day`, `week`, `month` and `all`, each with the same metrics:
+
+```json
+{ "day": { "betCount": 19095, "wageredValue": 25745.33, "profitValue": -1864.74, "rtp": 0.9276 },
+  "week": { ... }, "month": { ... }, "all": { ... } }
+```
+
+How to read it:
+
+- Each `game_statistics` row is one point-in-time snapshot, and `created_at` is when it was scraped. Trends over time come from comparing snapshots, not from one row.
+- `profitValue` is from the player's side: `profitValue ≈ wageredValue × (rtp − 1)`. A negative value means players lost money, so the house or studio won.
+- `rtp` is a ratio (0.93 = 93%) and is very noisy when `betCount` is small. When combining several games, weight by wagered amount (`Σ(wagered + profit) / Σ wagered`) rather than averaging the per-game RTPs.
+- The windows can disagree slightly. In the sample above, `all` has *fewer* bets than `week`/`month`, so don't assume `all ≥ month ≥ week ≥ day`.
+- The currency of `wageredValue`/`profitValue` hasn't been confirmed.
 
 ## Commands
 
