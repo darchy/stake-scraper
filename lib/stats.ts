@@ -1,5 +1,5 @@
 import "server-only";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { getPool } from "./db";
 import {
   STUDIO_GGR_SHARE,
@@ -21,6 +21,8 @@ const MAX_RUNS = 400;
 export async function getGames(): Promise<GameOption[]> {
   "use cache";
   cacheLife("minutes");
+  // Game and studio names: expired by the management actions in lib/actions.ts.
+  cacheTag("games", "studios");
 
   const { rows } = await getPool().query<GameOption>(`
     select g.id::int as id, g.name, s.name as studio
@@ -42,6 +44,8 @@ export async function getStatsSeries(
 ): Promise<StatsPoint[]> {
   "use cache";
   cacheLife("minutes");
+  // Deleting a game or studio removes snapshots, so it expires "stats" too.
+  cacheTag("stats");
 
   const { rows } = await getPool().query<{
     takenAt: Date;

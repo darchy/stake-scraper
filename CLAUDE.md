@@ -6,21 +6,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project purpose
 
-A dashboard that reads game statistics scraped from stake.com out of a PostgreSQL database and shows them as charts. The scraping itself happens outside this app, which only reads from the database.
+A dashboard that reads game statistics scraped from stake.com out of a PostgreSQL database and shows them as charts. It also lets the owner add, edit and delete studios and games (the list the scraper works from). The scraping itself happens outside this app. **The app never writes `game_statistics`**: there is no action that inserts, updates or deletes a snapshot. There is no login; anyone who can reach the page can do everything.
 
 The database runs on the owner's Linux desktop server and is reachable only over their local network. Connection details live in `.env.local`, which is gitignored by the `.env*` rule. Never hard-code them or print them.
 
 ## Architecture
 
-There is one route, `/`, a statistics dashboard driven by the URL: `?game=<games.id>` (left out means all games) and `?window=day|week|month|all` (left out means `day`).
+Routes:
 
-- `app/page.tsx` renders the static header, plus a `<Suspense>` boundary around `Dashboard`. `Dashboard` awaits `searchParams` (runtime data, so it has to be inside Suspense under Cache Components), runs the queries, and passes plain data to the client.
+- `/` is the statistics dashboard, driven by the URL: `?game=<games.id>` (left out means all games) and `?window=day|week|month|all` (left out means `day`).
+- `/studios`, `/studios/new`, `/studios/[id]/edit`, `/studios/[id]/delete`
+- `/games` (`?studio=<id>` filters), `/games/new` (`?studio=<id>` preselects), `/games/[id]/edit`, `/games/[id]/delete`
+
+The header (logo, `nav-links.tsx`, theme switch) lives in `app/layout.tsx`. `usePathname` suspends on the `[id]` routes under Cache Components, so `NavLinks` wraps it in its own Suspense.
+
+- `app/page.tsx` renders a `<Suspense>` boundary around `Dashboard`. `Dashboard` awaits `searchParams` (runtime data, so it has to be inside Suspense under Cache Components), runs the queries, and passes plain data to the client.
 - `lib/stats.ts` is server-only and holds the queries, cached with `"use cache"` + `cacheLife("minutes")`. `lib/db.ts` keeps one `pg` Pool on `globalThis` so hot reloads don't leak connections. `lib/stats-types.ts` holds the types, window constants and URL parsers; client code may import it.
 - `app/_components/dashboard-view.tsx` is the client UI. Filter changes call `router.replace` inside `startTransition`, and `useOptimistic` highlights the new selection right away. While a change is loading, the previous charts stay on screen at reduced opacity rather than showing a skeleton.
 - `metrics.ts` defines the four metrics (bets, wagered, player profit, RTP): their formatting, how the change since the previous snapshot is expressed, the reference line, and the chart shape. `metric-chart.tsx` draws each metric as its own Recharts chart. All four share `syncId` so the hover crosshair stays in sync across them. Never put two metrics on one chart with two y-axes; that's why they're separate small multiples.
 - **All-games aggregation** (in `getStatsSeries`): snapshots are grouped into scrape runs by `date_trunc('minute', created_at)`. For each run, every game contributes its latest snapshot from the previous 36 hours, so a game that failed to scrape once doesn't make the total dip. RTP is recomputed from the sums, never averaged.
 - **Dates** are formatted only after hydration (`useHydrated`), so the viewer's locale and time zone apply without hydration mismatches. Numbers use a fixed `en-US` locale and are safe to render on the server.
 - **Theme**: CSS tokens in `app/globals.css` cover light, dark when the OS prefers it, and dark via `[data-theme=dark]`. Chart colours use these tokens too (`stroke="var(--data)"`). `app/theme-script.tsx` applies the saved choice from `localStorage` before first paint, and `theme-switch.tsx` offers Light, Match system and Dark.
+- **Managing studios and games**:
+  - `lib/manage.ts` (server-only) holds the cached reads, which are tagged `studios`/`games`/`stats`. `lib/manage-types.ts` holds the row types and the form validation; client code may import it. `lib/actions.ts` (`"use server"`) holds the six create/update/delete actions.
+  - Each action validates on the server and returns `FormState` (field errors plus the submitted values) for `useActionState`. On success it calls `updateTag` and `redirect`s back to the list.
+  - `getGames`/`getStatsSeries` in `lib/stats.ts` are tagged too, so the dashboard reflects changes immediately.
+  - A `game_slug` already used by another game is rejected, case-insensitively. The scraper queries by slug.
+  - Forms are client components in `app/_components/manage/`. Each page puts the runtime-data part behind Suspense, as `/` does.
+  - **Deletes cascade in the database** (`ON DELETE CASCADE` on both FKs): deleting a game removes its snapshots, and deleting a studio removes its games and their snapshots. The delete pages show what will go and require typing the exact name. `deleteConfirmed` re-checks that name under `select … for update`.
 - `app/error.tsx` catches database failures, such as the server being unreachable on the LAN, and offers a retry.
 
 ## Database schema
