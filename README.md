@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# stake-scraper
 
-## Getting Started
+A dashboard for stake.com game statistics. It reads studios, games, and periodic statistics snapshots from a PostgreSQL database on the local network and shows them as charts.
 
-First, run the development server:
+The landing page charts bets, amount wagered, player profit and return to player (RTP) over time, for all games together or for one game. You can switch between the day, week, month and all-time windows, flip to a table view, and choose a light, dark or system theme.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Built with Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS v4, Recharts and node-postgres.
+
+## Getting started
+
+Put the database connection details in `.env.local`. This file is gitignored and must stay out of git.
+
+```
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then install and run:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000. The machine running the app has to be able to reach the database server over the local network.
 
-## Learn More
+## Data model
 
-To learn more about Next.js, take a look at the following resources:
+- **studios**: studio name and stake.com follower count
+- **games**: each game belongs to a studio and stores its stake.com slug and save count
+- **game_statistics**: snapshots in time of a game's `day` / `week` / `month` / `all` metrics (`betCount`, `wageredValue`, `profitValue`, `rtp`), stored as JSON
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `CLAUDE.md` for field-level details and how to read the metrics.
