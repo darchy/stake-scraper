@@ -43,6 +43,40 @@ export type StatsPoint = {
   studioEarnings: number;
 };
 
+/**
+ * One studio (all-studios view) or one game (single-studio view) on the
+ * earnings page, from the "all" window of each game's latest snapshot.
+ */
+export type EarningsItem = {
+  /** studios.id or games.id, depending on the view. */
+  id: number;
+  name: string;
+  /** Games with statistics that contributed to this item (1 for a game). */
+  games: number;
+  betCount: number;
+  wageredValue: number;
+  /** Player-side: negative means players lost (the house won). */
+  profitValue: number;
+  /** Wager-weighted return to player; null when nothing was wagered. */
+  rtp: number | null;
+  /** STUDIO_GGR_SHARE of GGR (−profitValue). Negative when players won. */
+  earnings: number;
+  /** Unix ms of the newest snapshot that contributed. */
+  takenAt: number;
+};
+
+export type EarningsTotals = Omit<EarningsItem, "id" | "name" | "takenAt">;
+
+export type EarningsBreakdown = {
+  /** Sorted by earnings, largest first. */
+  items: EarningsItem[];
+  total: EarningsTotals;
+  /** Unix ms of the newest snapshot used, or null when there are none. */
+  latestAt: number | null;
+  /** Games in scope that have no snapshot yet. */
+  missingGames: number;
+};
+
 /** Share of a game's gross gaming revenue (GGR) that goes to its studio. */
 export const STUDIO_GGR_SHARE = 0.1;
 

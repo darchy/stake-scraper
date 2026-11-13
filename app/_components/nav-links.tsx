@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 const LINKS = [
   { href: "/", label: "Dashboard" },
+  { href: "/earnings", label: "Earnings" },
   { href: "/studios", label: "Studios" },
   { href: "/games", label: "Games" },
 ] as const;

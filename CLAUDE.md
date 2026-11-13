@@ -15,6 +15,7 @@ The database runs on the owner's Linux desktop server and is reachable only over
 Routes:
 
 - `/` is the statistics dashboard, driven by the URL: `?game=<games.id>` (left out means all games) and `?window=day|week|month|all` (left out means `day`).
+- `/earnings` is the all-time studio earnings breakdown: one bar per studio, or per game with `?studio=<studios.id>`.
 - `/studios`, `/studios/new`, `/studios/[id]/edit`, `/studios/[id]/delete`
 - `/games` (`?studio=<id>` filters), `/games/new` (`?studio=<id>` preselects), `/games/[id]/edit`, `/games/[id]/delete`
 
@@ -25,6 +26,7 @@ The header (logo, `nav-links.tsx`, theme switch) lives in `app/layout.tsx`. `use
 - `app/_components/dashboard-view.tsx` is the client UI. Filter changes call `router.replace` inside `startTransition`, and `useOptimistic` highlights the new selection right away. While a change is loading, the previous charts stay on screen at reduced opacity rather than showing a skeleton.
 - `metrics.ts` defines the four metrics (bets, wagered, player profit, RTP): their formatting, how the change since the previous snapshot is expressed, the reference line, and the chart shape. `metric-chart.tsx` draws each metric as its own Recharts chart. All four share `syncId` so the hover crosshair stays in sync across them. Never put two metrics on one chart with two y-axes; that's why they're separate small multiples.
 - **All-games aggregation** (in `getStatsSeries`): snapshots are grouped into scrape runs by `date_trunc('minute', created_at)`. For each run, every game contributes its latest snapshot from the previous 36 hours, so a game that failed to scrape once doesn't make the total dip. RTP is recomputed from the sums, never averaged.
+- **Earnings breakdown** (`getEarningsBreakdown` in `lib/stats.ts`, UI in `earnings-view.tsx` + `earnings-bars.tsx`): uses the `all` window of each game's latest snapshot, sums profit per studio, then takes `STUDIO_GGR_SHARE`. It's drawn as ranked horizontal bars rather than a pie, because earnings can be negative. Games with no snapshot are only counted in a footnote. The total matches the dashboard's `?window=all` latest value when every game was in the latest run.
 - **Dates** are formatted only after hydration (`useHydrated`), so the viewer's locale and time zone apply without hydration mismatches. Numbers use a fixed `en-US` locale and are safe to render on the server.
 - **Theme**: CSS tokens in `app/globals.css` cover light, dark when the OS prefers it, and dark via `[data-theme=dark]`. Chart colours use these tokens too (`stroke="var(--data)"`). `app/theme-script.tsx` applies the saved choice from `localStorage` before first paint, and `theme-switch.tsx` offers Light, Match system and Dark.
 - **Managing studios and games**:
