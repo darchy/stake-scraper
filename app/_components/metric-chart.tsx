@@ -16,6 +16,7 @@ import {
 import { formatDateTime, formatDay } from "@/lib/format";
 import type { StatsPoint } from "@/lib/stats-types";
 import type { Metric } from "./metrics";
+import { niceScale } from "./scale";
 
 const CHART_HEIGHT = 216;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -185,20 +186,5 @@ function yScale(metric: Metric, data: StatsPoint[]) {
     min -= 0.01;
     max += 0.01;
   }
-  if (min === max) max = min + 1;
-
-  const step = niceStep((max - min) / 4);
-  const lo = Math.floor(min / step) * step;
-  const hi = Math.ceil(max / step) * step;
-  const ticks: number[] = [];
-  for (let v = lo; v <= hi + step / 2; v += step) ticks.push(Number(v.toPrecision(12)));
-  return { domain: [lo, hi] as [number, number], ticks };
-}
-
-/** Rounds a raw step up to 1, 2, 2.5 or 5 times a power of ten. */
-function niceStep(raw: number): number {
-  const power = 10 ** Math.floor(Math.log10(raw));
-  const fraction = raw / power;
-  const nice = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 2.5 ? 2.5 : fraction <= 5 ? 5 : 10;
-  return nice * power;
+  return niceScale(min, max);
 }

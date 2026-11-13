@@ -28,3 +28,20 @@ export function usePrefersReducedMotion(): boolean {
     () => true,
   );
 }
+
+const NARROW = "(max-width: 639px)";
+
+function subscribeNarrow(onChange: () => void) {
+  const query = window.matchMedia(NARROW);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+/** True below Tailwind's sm breakpoint, for layout that CSS can't reach (chart axes). */
+export function useNarrowScreen(): boolean {
+  return useSyncExternalStore(
+    subscribeNarrow,
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
